@@ -1164,24 +1164,24 @@ def main():
     st.sidebar.markdown("### 🔄 Auto-Update")
     if st.sidebar.button("Update Data & Retrain Model"):
         with st.spinner("Downloading latest data and retraining model... (Takes ~1-2 minutes)"):
-            import subprocess
-            import os
-            import sys
+            import runpy
+            import io
+            from contextlib import redirect_stdout, redirect_stderr
+            import traceback
+            
+            f = io.StringIO()
             try:
-                env = os.environ.copy()
-                env["PYTHONIOENCODING"] = "utf-8"
-                result = subprocess.run([sys.executable, "src/run_pipeline.py"], capture_output=True, text=True, env=env)
+                with redirect_stdout(f), redirect_stderr(f):
+                    runpy.run_path("src/run_pipeline.py", run_name="__main__")
                 
-                if result.returncode == 0:
-                    st.sidebar.success("✅ Update successful!")
-                    st.cache_data.clear()
-                    st.rerun()
-                else:
-                    st.sidebar.error("❌ Update failed!")
-                    with st.sidebar.expander("Show Error Logs"):
-                        st.text(result.stderr or result.stdout)
+                st.sidebar.success("✅ Update successful!")
+                st.cache_data.clear()
+                st.rerun()
             except Exception as e:
-                st.sidebar.error(f"Error: {e}")
+                st.sidebar.error("❌ Update failed!")
+                with st.sidebar.expander("Show Error Logs"):
+                    error_trace = traceback.format_exc()
+                    st.text(f.getvalue() + "\n" + error_trace)
                 
     st.sidebar.markdown("---")
     

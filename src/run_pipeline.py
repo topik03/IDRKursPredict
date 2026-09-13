@@ -40,22 +40,15 @@ def run_script(script_name, description):
         print(f"ERROR: Script not found: {script_path}")
         return False
     
+    import runpy
     try:
-        result = subprocess.run(
-            [sys.executable, str(script_path)],
-            capture_output=False,
-            text=True,
-            shell=False
-        )
-        
-        if result.returncode == 0:
-            print(f"\n✓ {script_name} completed successfully")
-            return True
-        else:
-            print(f"\n✗ {script_name} failed with exit code {result.returncode}")
-            return False
-    
+        # Run the script in the same process
+        runpy.run_path(str(script_path), run_name="__main__")
+        print(f"\n✓ {script_name} completed successfully")
+        return True
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print(f"ERROR running {script_name}: {e}")
         return False
 
