@@ -1,0 +1,2 @@
+Date,Last_Close,Predicted_Next_Day,Predicted_Return,Raw_Predicted,Difference,Pct_Difference,Direction,Confidence,Confidence_Pct,Max_Allowed_Pct,Constraints_Applied
+2026-09-11,17588.099609375,17591.081066804472,0.00016948686,17591.081066804472,2.981457429472357,0.016951560974121094,Naik ↑,Tinggi,85,0.9446299058659963,False
