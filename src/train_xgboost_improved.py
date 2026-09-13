@@ -186,7 +186,7 @@ def main():
         'colsample_bytree': 0.8,
         'min_child_weight': 2,  # Decreased to allow more aggressive predictions
         'random_state': 42,
-        'n_jobs': -1,
+        'n_jobs': 2,
         'early_stopping_rounds': 20
     }
     
