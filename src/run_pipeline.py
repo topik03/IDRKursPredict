@@ -42,7 +42,7 @@ def run_script(script_name, description):
     
     try:
         result = subprocess.run(
-            ["python", str(script_path)],
+            [sys.executable, str(script_path)],
             capture_output=False,
             text=True,
             shell=False

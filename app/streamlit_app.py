@@ -1166,10 +1166,11 @@ def main():
         with st.spinner("Downloading latest data and retraining model... (Takes ~1-2 minutes)"):
             import subprocess
             import os
+            import sys
             try:
                 env = os.environ.copy()
                 env["PYTHONIOENCODING"] = "utf-8"
-                result = subprocess.run(["python", "src/run_pipeline.py"], capture_output=True, text=True, env=env)
+                result = subprocess.run([sys.executable, "src/run_pipeline.py"], capture_output=True, text=True, env=env)
                 
                 if result.returncode == 0:
                     st.sidebar.success("✅ Update successful!")
