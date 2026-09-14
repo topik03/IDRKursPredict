@@ -1163,34 +1163,70 @@ def main():
     # Auto-Update Button
     st.sidebar.markdown("### 🔄 Auto-Update")
     if st.sidebar.button("Update Data & Retrain Model"):
-        with st.spinner("Downloading latest data and retraining model... (Takes ~1-2 minutes)"):
-            import runpy
-            import io
-            from contextlib import redirect_stdout, redirect_stderr
-            import traceback
+        import subprocess
+        import sys
+        import os
+        
+        st.markdown("## 🔄 Pipeline Sedang Berjalan...")
+        st.info("Jangan tutup halaman ini. Proses update data dan retrain model sedang berjalan (estimasi 2-5 menit).")
+        
+        log_container = st.empty()
+        status_container = st.empty()
+        
+        log_lines = []
+        
+        env = os.environ.copy()
+        env["PYTHONIOENCODING"] = "utf-8"
+        env["PYTHONUNBUFFERED"] = "1"
+        
+        try:
+            process = subprocess.Popen(
+                [sys.executable, "-u", "src/run_pipeline.py"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                env=env,
+                bufsize=1
+            )
             
-            f = io.StringIO()
-            try:
-                with redirect_stdout(f), redirect_stderr(f):
-                    runpy.run_path("src/run_pipeline.py", run_name="__main__")
-                
-                st.sidebar.success("✅ Update successful!")
-                st.cache_data.clear()
-                st.rerun()
-            except Exception as e:
-                st.sidebar.error("❌ Update failed!")
-                with st.sidebar.expander("Show Error Logs"):
-                    error_trace = traceback.format_exc()
-                    st.text(f.getvalue() + "\n" + error_trace)
-            except SystemExit as e:
-                if e.code == 0 or e.code is None:
-                    st.sidebar.success("✅ Update successful!")
+            for line in process.stdout:
+                line = line.rstrip()
+                if line:
+                    log_lines.append(line)
+                    # Show last 30 lines to avoid overwhelming the UI
+                    display_lines = log_lines[-30:]
+                    log_container.code("\n".join(display_lines), language=None)
+                    
+                    # Update progress badge
+                    for l in log_lines:
+                        if "/16]" in l or "/16] " in l:
+                            try:
+                                step_num = int(l.split("[")[1].split("/")[0])
+                                status_container.progress(step_num / 16, text=f"Step {step_num}/16 selesai...")
+                            except:
+                                pass
+            
+            process.wait()
+            
+            if process.returncode == 0 or process.returncode == 1:
+                # returncode 1 = pipeline finished with some failures (still ok)
+                full_log = "\n".join(log_lines)
+                successful = full_log.count("✓") 
+                if "Pipeline completed" in full_log or "COMPLETION SUMMARY" in full_log:
+                    status_container.success("✅ Pipeline selesai! Halaman akan di-refresh...")
                     st.cache_data.clear()
+                    import time
+                    time.sleep(2)
                     st.rerun()
                 else:
-                    st.sidebar.error("❌ Update failed (SystemExit)!")
-                    with st.sidebar.expander("Show Error Logs"):
-                        st.text(f.getvalue() + f"\nScript exited with code {e.code}")
+                    status_container.error("❌ Pipeline gagal sebelum selesai.")
+            else:
+                status_container.error(f"❌ Update gagal (exit code {process.returncode})")
+                
+        except Exception as e:
+            import traceback
+            st.error(f"❌ Error: {e}")
+            st.code(traceback.format_exc())
                 
     st.sidebar.markdown("---")
     
