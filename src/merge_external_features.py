@@ -86,11 +86,11 @@ def main():
     print(f"   - Method: Forward fill then backward fill")
     
     for col in external_cols:
-        # Forward fill (use previous day's value)
-        merged_df[col] = merged_df[col].fillna(method='ffill')
+        # Forward fill first (carry previous day's data forward)
+        merged_df[col] = merged_df[col].ffill()
         
-        # Backward fill (use next day's value for any remaining NaN at the start)
-        merged_df[col] = merged_df[col].fillna(method='bfill')
+        # Then backward fill for any remaining NaNs at the beginning
+        merged_df[col] = merged_df[col].bfill()
     
     # Check missing values after filling
     print(f"\n[7] Missing values after filling:")
