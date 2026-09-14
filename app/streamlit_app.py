@@ -1182,6 +1182,15 @@ def main():
                 with st.sidebar.expander("Show Error Logs"):
                     error_trace = traceback.format_exc()
                     st.text(f.getvalue() + "\n" + error_trace)
+            except SystemExit as e:
+                if e.code == 0 or e.code is None:
+                    st.sidebar.success("✅ Update successful!")
+                    st.cache_data.clear()
+                    st.rerun()
+                else:
+                    st.sidebar.error("❌ Update failed (SystemExit)!")
+                    with st.sidebar.expander("Show Error Logs"):
+                        st.text(f.getvalue() + f"\nScript exited with code {e.code}")
                 
     st.sidebar.markdown("---")
     
